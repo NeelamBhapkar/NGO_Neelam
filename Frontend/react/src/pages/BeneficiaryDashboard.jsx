@@ -23,7 +23,7 @@ const BeneficiaryDashboard = () => {
 
   const fetchRequests = async () => {
     const res = await axios.get(
-      `http://localhost:8081/api/beneficiary/requests/${beneficiaryId}`
+      `http://localhost:8084/api/beneficiary/requests/${beneficiaryId}`
     );
     setRequests(res.data);
   };
@@ -55,7 +55,7 @@ const BeneficiaryDashboard = () => {
 
     try {
       await axios.post(
-        "http://localhost:8081/api/beneficiary/request",
+        "http://localhost:8084/api/beneficiary/request",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -82,7 +82,7 @@ const BeneficiaryDashboard = () => {
   // ✅ UPDATE
   const handleUpdate = async (id) => {
     await axios.put(
-      `http://localhost:8081/api/beneficiary/request/${id}`,
+      `http://localhost:8084/api/beneficiary/request/${id}`,
       editForm
     );
     setEditingId(null);
@@ -93,7 +93,7 @@ const BeneficiaryDashboard = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this request?")) return;
     await axios.delete(
-      `http://localhost:8081/api/beneficiary/request/${id}`
+      `http://localhost:8084/api/beneficiary/request/${id}`
     );
     fetchRequests();
   };

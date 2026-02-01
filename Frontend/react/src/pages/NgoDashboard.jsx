@@ -82,13 +82,46 @@ const NgoDashboard = () => {
   const userData = localStorage.getItem("user");
   const userDetail = JSON.parse(userData)
 
-  const [activeRequest, setRequest] = useState([]);
+  const [reqCount, setCounts] = useState({active:0,pending:0});
   useEffect(()=>{
-    fetch("http://localhost:8083/getActive")
-      .then(res =>res.json())
-      .then(data =>setRequest(data))
+    Promise.all([
+      fetch("http://localhost:8083/api/ngo/getActive").then(res=>res.json()),
+      fetch("http://localhost:8083/api/ngo/getPending").then(res=>res.json())
+    ])
+    .then(([activeCount,pendingCount]) =>{
+        setCounts({
+        active:activeCount,
+        pending:pendingCount
+      });
+    })   
       .catch(err=>console.log("No requests found"))
+  },[]);
+
+  const[fundRecd, setFunds] = useState({currentFund:0, totalFunds:0});
+  const uid = userDetail.userId;
+  useEffect(()=>{
+    Promise.all([
+      fetch(`http://localhost:8083/api/ngof/getcurrent/${uid}`).then(res=>res.json()),
+      fetch(`http://localhost:8083/api/ngof/gettotal/${uid}`).then(res=>res.json())
+    ])
+    .then(([currFunds,totFunds])=>{
+      setFunds({
+        currentFund:currFunds,
+        totalFunds:totFunds
+      });
+    })
   },[])
+const formatCurrency = (amount) =>{
+  if(amount === null || amount === undefined)
+    return 0;
+  return new Intl.NumberFormat("en-IN",{
+    notation:"compact",
+    compactDisplay:"short",
+    maximumFractionDigits:1
+  }).format(amount)
+}
+ 
+
 
   const handleLogout = () => {
     localStorage.clear();
@@ -109,28 +142,28 @@ const NgoDashboard = () => {
       
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <p style={styles.subtitle}>Active Campaigns</p>
-          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{activeRequest}</h2>
-          <button type="button" class="btn btn-primary" onClick={()  =>navigate("/view-requests")}>View Request's</button>
+          <p style={styles.subtitle}>Active Requests</p>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{reqCount.active}</h2>
+          <button type="button" class="btn btn-primary" onClick={()  =>navigate("/view-requests",{state:{filter:"ACTIVE"}})}>Active Request's</button>
           <FaAward style={{ ...styles.iconBase, color: "#2563eb", background: "#dbeafe" }} />
         </div>
         <div style={styles.statCard}>
+          <p style={styles.subtitle}>Pending Requests</p>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{reqCount.pending}</h2>
+          <button type="button" class="btn btn-warning" onClick={()  =>navigate("/view-requests", {state:{filter:"PENDING"}})}>New Request's</button>
+          <FaChartLine style={{ ...styles.iconBase, color: "#7c3aed", background: "#ede9fe" }} />
+        </div>
+        <div style={styles.statCard}>
           <p style={styles.subtitle}>Total beneficiaries helped</p>
-          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>456</h2>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}></h2>
           <FaUsers style={{ ...styles.iconBase, color: "#16a34a", background: "#dcfce7" }} />
         </div>
         <div style={styles.statCard}>
-          <p style={styles.subtitle}>Funds Received</p>
-          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>₹12.5L</h2>
+          <p style={styles.subtitle}>Funds Received till date</p>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{formatCurrency(fundRecd.totalFunds)}</h2>
           <FaHeart style={{ ...styles.iconBase, color: "#dc2626", background: "#fee2e2" }} />
         </div>
-        <div style={styles.statCard}>
-          <p style={styles.subtitle}>Impact Score</p>
-          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>94%</h2>
-          <FaChartLine style={{ ...styles.iconBase, color: "#7c3aed", background: "#ede9fe" }} />
-        </div>
       </div>
-
       {/* Middle Section */}
       <div style={styles.middleGrid}>
         <div style={styles.card}>
@@ -169,10 +202,9 @@ const NgoDashboard = () => {
 
         <div style={styles.card}>
           <h3 style={{ marginBottom: "10px" }}>Impact Metrics</h3>
-          <div style={styles.metricRow}><span>Beneficiaries</span><strong>234</strong></div>
-          <div style={styles.metricRow}><span>Meals Provided</span><strong>5,678</strong></div>
-          <div style={styles.metricRow}><span>Students</span><strong>145</strong></div>
-          <div style={styles.metricRow}><span>Checkups</span><strong>89</strong></div>
+          <div style={styles.metricRow}><span>Funding Provided</span><strong>234</strong></div>
+          <div style={styles.metricRow}><span>Rations Provided</span><strong>5,678</strong></div>
+          <div style={styles.metricRow}><span>Medical Aid</span><strong>145</strong></div>
         </div>
       </div>
       

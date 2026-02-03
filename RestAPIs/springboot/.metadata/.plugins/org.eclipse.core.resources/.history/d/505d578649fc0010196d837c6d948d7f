@@ -1,5 +1,0 @@
-package com.cdac.admin_backend.repository;
-
-public class UserRepository {
-
-}

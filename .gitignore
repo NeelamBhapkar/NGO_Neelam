@@ -8,17 +8,3 @@
 # Ignore all build folders
 **/build/
 **/target/
-.vscode/
-.project
-*.ser
-.settings/
-.classpath
-bin/
-build/
-
-# Eclipse metadata
-.metadata/
-*.prefs
-.project
-.classpath
-.settings/

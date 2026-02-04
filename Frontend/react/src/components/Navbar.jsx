@@ -1,46 +1,41 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom'; 
-import { FaHandHoldingHeart, FaSun, FaMoon, FaCloud, FaBars, FaTimes } from 'react-icons/fa';
+import { FaSun, FaMoon, FaCloud, FaBars, FaTimes } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
-import NGOlogoImg from '../assets/NGO-CONNECT-Logo.png';
 import NGOImg from '../assets/Logo.png';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false); // State to trigger animation
+  const [isAnimating, setIsAnimating] = useState(false); 
   
   const location = useLocation(); 
 
   const toggleNav = () => setIsNavOpen(!isNavOpen);
   const closeNav = () => setIsNavOpen(false);
 
-  // Handle Theme Toggle with Animation
   const handleThemeToggle = () => {
-    setIsAnimating(true); // Start animation
-    toggleTheme(); // Switch theme
-    
-    // Remove animation class after it finishes (500ms)
+    setIsAnimating(true);
+    toggleTheme();
     setTimeout(() => setIsAnimating(false), 500);
   };
 
   const getThemeIcon = () => {
-    if (theme === 'light') return <FaSun size={18} color="#f59e0b" />;
-    if (theme === 'grey') return <FaCloud size={18} color="#9ca3af" />;
-    return <FaMoon size={18} color="#fbbf24" />;
+    if (theme === 'light') return <FaSun size={16} color="#f59e0b" />;
+    if (theme === 'grey') return <FaCloud size={16} color="#9ca3af" />;
+    return <FaMoon size={16} color="#fbbf24" />;
   };
 
   const isActive = (path) => location.pathname === path;
 
   return (
     <>
-      {/* 1. DEFINE ANIMATION STYLES */}
       <style>
         {`
           @keyframes spin-theme {
             0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(0.8); } /* Shrink slightly */
+            50% { transform: rotate(180deg) scale(0.8); }
             100% { transform: rotate(360deg) scale(1); }
           }
           .theme-spin-effect {
@@ -54,25 +49,25 @@ const Navbar = () => {
         style={{ 
           backgroundColor: 'var(--nav-bg)', 
           transition: 'background-color 0.3s ease',
-          padding: '0.8rem 2rem'
+          padding: '0.4rem 3rem',
+          minHeight: '60px'
         }}
       >
         <div className="container-fluid p-0">
           
-          {/* BRANDING WITH PNG LOGO */}
+          {/* BRANDING */}
           <Link 
             className="navbar-brand d-flex align-items-center" 
             to="/" 
             onClick={closeNav}
             style={styles.brand}
           >
-            {/* Replaced Icon with Image */}
             <img 
               src={NGOImg} 
               alt="NGO Connect Logo" 
-              style={{ height: '40px', marginRight: '10px', objectFit: 'contain' }} 
+              style={{ height: '32px', marginRight: '8px', objectFit: 'contain' }} 
             />
-            <span>NGO-Connect</span>
+            <span style={{fontFamily: '"Google Sans", sans-serif'}}>NGO-Connect</span>
           </Link>
 
           {/* MOBILE TOGGLER */}
@@ -84,7 +79,7 @@ const Navbar = () => {
             aria-label="Toggle navigation"
             style={{ color: 'var(--text-primary)' }} 
           >
-            {isNavOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+            {isNavOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
           </button>
 
           {/* COLLAPSIBLE CONTENT */}
@@ -92,9 +87,9 @@ const Navbar = () => {
             className={`collapse navbar-collapse ${isNavOpen ? 'show' : ''}`} 
             id="navbarContent"
           >
-            {/* NAVIGATION LINKS (Right Aligned) */}
-            <ul className="navbar-nav ms-auto mb-2 mb-md-0 gap-md-4 gap-3 text-center pt-3 pt-md-0">
-              {['Home', 'Campaigns', 'Our Mission', 'Contact'].map((item) => {
+            {/* LINKS */}
+            <ul className="navbar-nav ms-auto mb-2 mb-md-0 gap-md-4 gap-2 text-center pt-3 pt-md-0">
+              {['Home', 'Campaigns', 'Our Mission', 'FAQs', 'Contact'].map((item) => {
                 const path = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`;
                 const active = isActive(path);
 
@@ -116,7 +111,7 @@ const Navbar = () => {
               })}
             </ul>
 
-            {/* RIGHT SIDE: Theme Toggle with Animation */}
+            {/* THEME TOGGLE */}
             <div className="d-flex align-items-center justify-content-center gap-3 mt-3 mt-md-0 ms-md-4">
               <button 
                 onClick={handleThemeToggle} 
@@ -137,7 +132,7 @@ const Navbar = () => {
 
 const styles = {
   brand: {
-    fontSize: '1.5rem',
+    fontSize: '1.25rem',
     fontWeight: '800',
     color: 'var(--primary)',
     letterSpacing: '-0.5px',
@@ -145,7 +140,7 @@ const styles = {
   navLink: {
     color: 'var(--text-secondary)',
     fontWeight: '600',
-    fontSize: '0.95rem',
+    fontSize: '0.9rem',
     transition: 'color 0.3s, border-bottom 0.3s',
     borderBottom: '2px solid transparent',
   },
@@ -158,11 +153,10 @@ const styles = {
     background: 'var(--nav-bg)',
     border: '1px solid rgba(128, 128, 128, 0.2)',
     cursor: 'pointer',
-    width: '40px',
-    height: '40px',
+    width: '32px',
+    height: '32px',
     borderRadius: '50%',
     boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-    // Note: We removed the inline transition here so it doesn't conflict with the keyframe animation
   },
 };
 

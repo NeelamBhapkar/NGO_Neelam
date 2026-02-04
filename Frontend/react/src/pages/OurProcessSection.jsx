@@ -1,5 +1,6 @@
 import React from "react";
 import { FaSearch, FaHandsHelping, FaChartLine } from "react-icons/fa";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const OurProcessSection = () => {
   const steps = [
@@ -23,88 +24,68 @@ const OurProcessSection = () => {
     },
   ];
 
-  const styles = {
-    section: {
-      backgroundColor: "#fff",
-      padding: "60px 20px",
-      textAlign: "center",
-      fontFamily: "sans-serif",
-    },
-    subheading: {
-      color: "#22c55e",
-      fontWeight: "bold",
-      fontSize: "14px",
-      textTransform: "uppercase",
-      letterSpacing: "1px",
-      marginBottom: "10px",
-    },
-    heading: {
-      fontSize: "36px",
-      color: "#1a202c",
-      marginBottom: "50px",
-      fontWeight: "bold",
-    },
-    stepsContainer: {
-      display: "flex",
-      justifyContent: "center",
-      flexWrap: "wrap",
-      gap: "40px",
-      maxWidth: "1200px",
-      margin: "0 auto",
-    },
-    stepCard: {
-      flex: "1 1 300px",
-      maxWidth: "350px",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-    },
-    // Common styles for the icon box
-    iconBoxBase: {
-      color: "#fff",
-      width: "70px",
-      height: "70px",
-      borderRadius: "50%",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      fontSize: "32px",
-      marginBottom: "20px",
-      // Remove fixed backgroundColor here, it will be added dynamically
-    },
-    stepTitle: {
-      fontSize: "20px",
-      fontWeight: "bold",
-      color: "#1a202c",
-      marginBottom: "15px",
-    },
-    stepDescription: {
-      color: "#4a5568",
-      lineHeight: "1.6",
-    },
-  };
-
   return (
-    <section style={styles.section}>
-      <h4 style={styles.subheading}>OUR PROCESS</h4>
-      <h2 style={styles.heading}>How We Make Impact</h2>
-      <div style={styles.stepsContainer}>
-        {steps.map((step, index) => (
-          <div key={index} style={styles.stepCard}>
-            {/* Dynamic style applied here */}
-            <div 
-              style={{
-                ...styles.iconBoxBase, 
-                backgroundColor: step.color // Use the specific color
-              }}
-            >
-              {step.icon}
+    <section className="py-5 bg-white">
+      <div className="container text-center">
+        
+        {/* SECTION HEADINGS */}
+        <div className="mb-5">
+          <h6 className="fw-bold text-success text-uppercase ls-1 mb-2">
+            Our Process
+          </h6>
+          <h2 className="fw-bold text-dark display-6">
+            How We Make Impact
+          </h2>
+        </div>
+
+        {/* STEPS GRID */}
+        <div className="row justify-content-center g-4">
+          {steps.map((step, index) => (
+            <div key={index} className="col-lg-4 col-md-6">
+              
+              <div className="h-100 p-4 rounded-3 step-card transition-all">
+                {/* ICON CIRCLE */}
+                <div 
+                  className="mx-auto rounded-circle d-flex align-items-center justify-content-center text-white mb-4 shadow-sm"
+                  style={{ 
+                    width: "80px", 
+                    height: "80px", 
+                    fontSize: "32px",
+                    backgroundColor: step.color 
+                  }}
+                >
+                  {step.icon}
+                </div>
+
+                {/* TEXT CONTENT */}
+                <h3 className="h4 fw-bold text-dark mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-secondary mb-0 px-xl-3" style={{ lineHeight: "1.7" }}>
+                  {step.description}
+                </p>
+              </div>
+
             </div>
-            <h3 style={styles.stepTitle}>{step.title}</h3>
-            <p style={styles.stepDescription}>{step.description}</p>
-          </div>
-        ))}
+          ))}
+        </div>
+
       </div>
+
+      {/* CUSTOM CSS FOR HOVER EFFECTS & SPACING */}
+      <style>
+        {`
+          .ls-1 { letter-spacing: 2px; }
+          
+          /* Smooth Hover Lift Effect */
+          .step-card:hover {
+            transform: translateY(-10px);
+          }
+          .transition-all {
+            transition: transform 0.3s ease-in-out;
+          }
+        `}
+      </style>
     </section>
   );
 };

@@ -1,17 +1,25 @@
 import React from 'react';
 import knowItLogo from '../assets/know-it-logo3.png';
 import cdacActsLogo from '../assets/cdac-acts-logo.png';
+import Mhai from '../assets/MHAI.svg';
+import Mca from '../assets/MCA.svg';
+import Goi from '../assets/GOI.svg';
+import Gom from '../assets/GOM.svg';
 
 
 const TrustedBySection = () => {
   const logos = [
+    Mca,
     knowItLogo,
+    Goi,
     cdacActsLogo,
+    Mhai,
     "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+    Gom,
     "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
     "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-    "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
-    "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg"
+    // "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+    // "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg"
   ];
 
   // We duplicate the array to ensure the loop is seamless (Conveyor belt trick)
@@ -69,7 +77,7 @@ const TrustedBySection = () => {
       </style>
 
       <div className="container">
-        <h3 style={styles.heading}>TRUSTED BY ORGANIZATIONS WORLDWIDE</h3>
+        <h3 style={styles.heading}>TRUSTED BY ORGANIZATIONS NATIONWIDE</h3>
 
         {/* 2. The Window (Hides the overflow) */}
         <div className="overflow-hidden w-100">

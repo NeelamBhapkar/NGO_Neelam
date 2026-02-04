@@ -1,167 +1,149 @@
-import React from 'react';
-import { FaFacebookF, FaTwitter, FaInstagram, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  FaLinkedinIn,
+  FaGithub,
+  FaMapMarkerAlt,
+  FaPhoneAlt,
+  FaEnvelope,
+} from "react-icons/fa";
+import NGOImg from "../assets/Logo.png";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { IoIosMail } from "react-icons/io";
+
 
 const FooterSection = () => {
-  const styles = {
-    footer: {
-      backgroundColor: '#0a1929', // Dark blue background
-      color: '#fff',
-      padding: '60px 40px',
-      fontFamily: 'sans-serif',
-    },
-    container: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      maxWidth: '1200px',
-      margin: '0 auto',
-      gap: '40px',
-    },
-    column: {
-      flex: '1 1 200px',
-      marginBottom: '20px',
-    },
-    logoBox: {
-        backgroundColor: '#1565c0',
-        padding: '10px',
-        display: 'inline-block',
-        marginBottom: '20px',
-        fontWeight: 'bold',
-        fontSize: '18px'
-    },
-    description: {
-      lineHeight: '1.6',
-      color: '#ccc',
-      marginBottom: '20px',
-    },
-    socialIcons: {
-      display: 'flex',
-      gap: '15px',
-    },
-    icon: {
-      backgroundColor: '#1e2a3a',
-      padding: '10px',
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: 'pointer',
-    },
-    heading: {
-      fontSize: '18px',
-      marginBottom: '20px',
-      color: '#fff',
-    },
-    linkList: {
-      listStyle: 'none',
-      padding: 0,
-    },
-    linkItem: {
-      marginBottom: '12px',
-    },
-    link: {
-      textDecoration: 'none',
-      color: '#ccc',
-      transition: 'color 0.3s',
-    },
-    contactItem: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: '15px',
-      color: '#ccc',
-    },
-    contactIcon: {
-      marginRight: '10px',
-      color: '#22c55e', // Green color
-    },
-    newsletterText: {
-      color: '#ccc',
-      marginBottom: '20px',
-    },
-    inputGroup: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '10px'
-    },
-    input: {
-      padding: '12px',
-      borderRadius: '4px',
-      border: '1px solid #333',
-      backgroundColor: '#1e2a3a',
-      color: '#fff',
-      outline: 'none',
-    },
-    button: {
-      padding: '12px',
-      borderRadius: '4px',
-      border: 'none',
-      backgroundColor: '#22c55e', // Green color
-      color: '#fff',
-      fontWeight: 'bold',
-      cursor: 'pointer',
-    }
-  };
-
   return (
-    <footer style={styles.footer}>
-      <div style={styles.container}>
-        {/* Column 1: Company Info */}
-        <div style={styles.column}>
-          <div style={styles.logoBox}>
-            Logo Here
-            <br />
-          </div>
-          <p style={styles.description}>
-            Empowering communities through sustainable development, education, and healthcare initiatives worldwide.
-          </p>
-          <div style={styles.socialIcons}>
-            <div style={styles.icon}><FaFacebookF /></div>
-            <div style={styles.icon}><FaTwitter /></div>
-            <div style={styles.icon}><FaInstagram /></div>
-          </div>
-        </div>
+    <footer className="text-white py-5" style={{ backgroundColor: "#0a1929" }}>
+      <div className="container">
+        {/* Added 'text-center text-md-start' to center content on mobile but left-align on desktop */}
+        <div className="row gy-5 text-center text-md-start">
+          {/* COLUMN 1: BRANDING & INFO */}
+          <div className="col-lg-4 col-md-6">
+            {/* Logo Section: Centered on mobile (justify-content-center), Left on desktop (justify-content-md-start) */}
+            <div className="d-flex align-items-center justify-content-center justify-content-md-start mb-3">
+              <img
+                src={NGOImg}
+                alt="NGO Connect Logo"
+                style={{ height: "40px", width: "auto", objectFit: "contain" }}
+                className="me-2"
+              />
+              <span className="fs-4 fw-bold text-success" style={{fontFamily: '"Google Sans", sans-serif'}}>NGO-Connect</span>
+            </div>
 
-        {/* Column 2: Quick Links */}
-        <div style={styles.column}>
-          <h4 style={styles.heading}>Quick Links</h4>
-          <ul style={styles.linkList}>
-            {['About Us', 'Our Campaigns', 'FAQ', 'Contact'].map((link, index) => (
-              <li key={index} style={styles.linkItem}>
-                <a href="#" style={styles.link}>{link}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
+            {/* Description: Auto margins on mobile to center the text block */}
+            <p
+              className="text-secondary mb-4 mx-auto ms-md-0"
+              style={{ lineHeight: "1.7", maxWidth: "320px" }}
+            >
+              Empowering communities through sustainable development, education,
+              and healthcare initiatives worldwide.
+            </p>
 
-        {/* Column 3: Contact Us */}
-        <div style={styles.column}>
-          <h4 style={styles.heading}>Contact Us</h4>
-          <div style={styles.contactItem}>
-            <FaMapMarkerAlt style={styles.contactIcon} />
-            <span><a href='https://maps.app.goo.gl/FqC2oJ3V6Z9mi2JH7'>KNOW-IT, C-DAC ACTS (ATC), Pune</a></span>
+            {/* Social Icons: Centered on mobile */}
+            <div className="d-flex gap-3 justify-content-center justify-content-md-start">
+              <a
+                href="https://github.com/Ngo-Connect/NGO"
+                className="text-white fs-5 hover-opacity"
+              >
+                <FaGithub />
+              </a>
+              <a
+                href="	info@know-it.co.in
+"
+                className="text-white fs-5 hover-opacity"
+              >
+                <IoIosMail />
+              </a>
+            </div>
           </div>
-          <div style={styles.contactItem}>
-            <FaPhoneAlt style={styles.contactIcon} />
-            <span>+918475451254</span>
-          </div>
-          <div style={styles.contactItem}>
-            <FaEnvelope style={styles.contactIcon} />
-            <span>support@ngo_connect.com.org</span>
-          </div>
-        </div>
 
-        {/* Column 4: Newsletter */}
-        <div style={{...styles.column, flex: '1 1 250px'}}>
-          <h4 style={styles.heading}>Newsletter</h4>
-          <p style={styles.newsletterText}>
-            Subscribe to get updates on our latest projects and impact.
-          </p>
-          <div style={styles.inputGroup}>
-            <input type="email" placeholder="Your email address" style={styles.input} />
-            <button style={styles.button}>Subscribe</button>
+          {/* COLUMN 2: NAVIGATION LINKS */}
+          <div className="col-lg-2 col-md-6">
+            <h5 className="text-white mb-4 fw-bold">Navigate</h5>
+            <ul className="list-unstyled p-0 m-0">
+              {["Home", "Campaigns", "Our Mission", "Contact"].map(
+                (item, index) => {
+                  const path =
+                    item === "Home"
+                      ? "/"
+                      : `/${item.toLowerCase().replace(" ", "-")}`;
+                  return (
+                    <li key={index} className="mb-3">
+                      <Link
+                        to={path}
+                        className="text-secondary text-decoration-none hover-text-white transition-all"
+                      >
+                        {item}
+                      </Link>
+                    </li>
+                  );
+                },
+              )}
+            </ul>
+          </div>
+
+          {/* COLUMN 3: CONTACT INFO */}
+          <div className="col-lg-3 col-md-6">
+            <h5 className="text-white mb-4 fw-bold">Contact Us</h5>
+
+            {/* Contact Items: Centered flex for mobile */}
+            <div className="d-flex flex-column align-items-center align-items-md-start gap-3 text-secondary">
+              <div className="d-flex align-items-start">
+                <FaMapMarkerAlt className="text-success me-3 mt-1" />
+                <a
+                  href="https://maps.google.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-secondary text-decoration-none hover-text-white text-start"
+                >
+                  KNOW-IT, C-DAC ACTS (ATC), Pune
+                </a>
+              </div>
+
+              <div className="d-flex align-items-center">
+                <FaPhoneAlt className="text-success me-3" />
+                <span>+91 9823434616</span>
+              </div>
+
+              <div className="d-flex align-items-center">
+                <FaEnvelope className="text-success me-3" />
+                <span>	info@know-it.co.in</span>
+              </div>
+            </div>
+          </div>
+
+          {/* COLUMN 4: SUBSCRIBE */}
+          <div className="col-lg-3 col-md-6">
+            <h5 className="text-white mb-4 fw-bold">Subscribe Us</h5>
+
+            <div
+              className="input-group bg-transparent border border-white rounded-pill overflow-hidden p-1 mx-auto ms-md-0"
+              style={{ maxWidth: "300px" }}
+            >
+              <input
+                type="email"
+                className="form-control bg-transparent border-0 text-white shadow-none ps-3"
+                placeholder="Enter Email"
+                aria-label="Enter Email"
+                style={{ color: "white" }}
+              />
+              <button className="btn btn-light rounded-pill px-4 fw-bold">
+                Subscribe
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Helper styles for hover effects & placeholder */}
+      <style>
+        {`
+          .hover-opacity:hover { opacity: 0.7; transition: 0.3s; }
+          .hover-text-white:hover { color: #fff !important; }
+          ::placeholder { color: #aaa !important; opacity: 1; }
+        `}
+      </style>
     </footer>
   );
 };

@@ -216,6 +216,11 @@ const NgoDashboard = () => {
           <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{formatCurrency(fundRecd.totalFunds)}</h2>
           <FaHeart style={{ ...styles.iconBase, color: "#dc2626", background: "#fee2e2" }} />
         </div>
+        <div style={styles.statCard}>
+          <p style={styles.subtitle}>Impact Score</p>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>94%</h2>
+          <FaChartLine style={{ ...styles.iconBase, color: "#7c3aed", background: "#ede9fe" }} />
+        </div>
       </div>
 
       <div style={styles.middleGrid}>
@@ -264,9 +269,10 @@ const NgoDashboard = () => {
 
         <div style={styles.card}>
           <h3 style={{ marginBottom: "10px" }}>Impact Metrics</h3>
-          <div style={styles.metricRow}><span>Funding Provided</span><strong>234</strong></div>
-          <div style={styles.metricRow}><span>Rations Provided</span><strong>5,678</strong></div>
-          <div style={styles.metricRow}><span>Medical Aid</span><strong>145</strong></div>
+          <div style={styles.metricRow}><span>Beneficiaries</span><strong>234</strong></div>
+          <div style={styles.metricRow}><span>Meals Provided</span><strong>5,678</strong></div>
+          <div style={styles.metricRow}><span>Students</span><strong>145</strong></div>
+          <div style={styles.metricRow}><span>Checkups</span><strong>89</strong></div>
         </div>
       </div>
 

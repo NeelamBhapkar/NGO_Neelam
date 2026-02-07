@@ -21,18 +21,7 @@ const Login = () => {
       setRememberMe(true);
     }
   }, []);
-  const validateEmail = (emailToValidate)=>{
-    let newErrors = {};
-    let isValid = true;
-    const emailRegexp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if((!emailRegexp.test(emailToValidate))){
-      setError("Please enter correct email format");
-      return false;
-    }
-    return true;
 
-  };
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -154,10 +143,7 @@ const Login = () => {
                   className="form-control bg-light border-0"
                   placeholder="name@example.com"
                   value={email}
-                  onChange={(e) => {setEmail(e.target.value);
-                    if(error)
-                      setError("");
-                  }}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   style={{ fontSize: '0.95rem', padding: '10px' }}
                 />

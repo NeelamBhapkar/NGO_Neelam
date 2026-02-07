@@ -1,6 +1,6 @@
 
-import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import {useNavigate}from "react-router-dom";
+import {useState, useEffect }from "react";
 
 export default function FetchRequest() {
     const navigate = useNavigate();
@@ -92,10 +92,10 @@ export default function FetchRequest() {
                         {requests.length > 0 ? (
                             requests.map((req, index) => (
                                 <tr key={req.request_id}>
-                                    <td>{index + 1}</td>
+                                    <td>{index+1}</td>
                                     <td>{req.description}</td>
                                     <td>
-
+                            
                                         {req.amount_needed ? `${req.amount_needed}` : "Physical Items"}
                                     </td>
                                     <td>{new Date(req.request_date).toLocaleDateString()}</td>
@@ -105,7 +105,7 @@ export default function FetchRequest() {
                                         </span>
                                     </td>
                                     <td>
-                                        <button className="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop" onClick={() => setReq(req)}>
+                                        <button className="btn btn-info btn-sm">
                                             View Details
                                         </button>
                                     </td>
@@ -149,5 +149,5 @@ export default function FetchRequest() {
             </div>
         </div>
     );
-
+    
 }

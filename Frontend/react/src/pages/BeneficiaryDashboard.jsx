@@ -23,7 +23,7 @@ const BeneficiaryDashboard = () => {
 
   const fetchRequests = async () => {
     const res = await axios.get(
-      `http://localhost:8084/api/beneficiary/requests/${beneficiaryId}`
+      `http://localhost:8080/beneficiary/requests/${beneficiaryId}`
     );
     setRequests(res.data);
   };

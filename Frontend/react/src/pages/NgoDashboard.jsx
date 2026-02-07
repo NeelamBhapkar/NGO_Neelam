@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUsers, FaHeart, FaChartLine, FaAward } from "react-icons/fa";
-import FetchRequest from "./ViewRequests";
 
 // --- CSS CONSTANT OBJECT ---
 const styles = {
@@ -63,7 +62,7 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.05)",
   },
   progressBar: {
-    height: "8px",
+    height: "10px",
     background: "#e5e7eb",
     borderRadius: "10px",
     overflow: "hidden",
@@ -80,15 +79,104 @@ const styles = {
 const NgoDashboard = () => {
   const navigate = useNavigate();
   const userData = localStorage.getItem("user");
-  const userDetail = JSON.parse(userData)
+  const userDetail = JSON.parse(userData) || {};
 
-  const [activeRequest, setRequest] = useState([]);
-  useEffect(()=>{
-    fetch("http://localhost:8083/getActive")
-      .then(res =>res.json())
-      .then(data =>setRequest(data))
-      .catch(err=>console.log("No requests found"))
-  },[])
+  const [reqCount, setCounts] = useState({ active: 0, pending: 0 });
+  const uid = userDetail.userId;
+
+  const [activeReqs, setActive] = useState([]);
+  const [impactCount, setImpact] = useState({ impact: 0 });
+  const [fundRecd, setFunds] = useState({ currentFund: 0, totalFunds: 0 });
+
+  const [showDonateModal, setShowDonateModal] = useState(false);
+  const [selectedReq, setSelectedReq] = useState(null);
+  const [donationAmount, setDonationAmount] = useState("");
+  const [donationDesc, setDonationDesc] = useState("");
+
+  const openDonateModal = (req) => {
+    setSelectedReq(req);
+    setShowDonateModal(true);
+  };
+ // sending donation detals
+  const handleDonationSubmit = () => {
+    const donationData = {
+      user_id: uid,
+      item_id: selectedReq.item_id,
+      benef_request_id: selectedReq.request_id,
+      amount: parseFloat(donationAmount),
+      donation_date: new Date().toISOString().split('T')[0],
+      description:donationDesc
+    };
+
+    fetch("http://localhost:8080/ngo/donate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(donationData)
+    })
+      .then(res => {
+        if (res.ok) {
+          alert("Donation Successful!");
+          setShowDonateModal(false);
+          setDonationAmount(""); // Clear input
+          window.location.reload();
+        }
+      })
+      .catch(err => console.error("Donation failed", err));
+  };
+
+  useEffect(() => {
+    if (!uid) return;
+    fetch(`http://localhost:8080/ngo/getUnderTakenReq/${uid}`)
+      .then(resp => resp.ok ? resp.json() : [])
+      .then(data => setActive(data))
+      .catch(err => {
+        console.log("No request Undertaken yet!", err);
+        setActive([]);
+      });
+  }, [uid]);
+
+  useEffect(() => {
+    if (!uid) return;
+    Promise.all([
+      fetch(`http://localhost:8080/ngo/getActive/${uid}`).then(res => res.json()),
+      fetch("http://localhost:8080/ngo/getPending").then(res => res.json())
+    ])
+      .then(([activeCount, pendingCount]) => {
+        setCounts({ active: activeCount, pending: pendingCount });
+      })
+      .catch(() => console.log("No requests found"))
+  }, [uid]);
+
+  useEffect(() => {
+    if (!uid) return;
+    fetch(`http://localhost:8080/ngo/getimpact/${uid}`)
+      .then(res => res.ok ? res.json() : 0)
+      .then(count => setImpact({ impact: count }))
+      .catch(() => setImpact({ impact: 0 }));
+  }, [uid]);
+
+  useEffect(() => {
+    if (!uid) return;
+    Promise.all([
+      fetch(`http://localhost:8080/ngo/getcurrent/${uid}`).then(res => res.json()),
+      fetch(`http://localhost:8080/ngo/gettotal/${uid}`).then(res => res.json())
+    ])
+      .then(([currFunds, totFunds]) => {
+        setFunds({ currentFund: currFunds, totalFunds: totFunds });
+      })
+      .catch(err => console.log("Funds fetch error", err));
+  }, [uid]);
+
+  const formatCurrency = (amount) => {
+    if (amount == null) return "₹0";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      notation: "compact",
+      compactDisplay: "short",
+      maximumFractionDigits: 1
+    }).format(amount);
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -97,7 +185,6 @@ const NgoDashboard = () => {
 
   return (
     <div style={styles.dashboardWrapper}>
-      
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>NGO Dashboard</h1>
@@ -106,22 +193,27 @@ const NgoDashboard = () => {
         <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
       </div>
 
-      
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <p style={styles.subtitle}>Active Campaigns</p>
-          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{activeRequest}</h2>
-          <button type="button" class="btn btn-primary" onClick={()  =>navigate("/view-requests")}>View Request's</button>
+          <p style={styles.subtitle}>Approved Requests</p>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{reqCount.active}</h2>
+          <button className="btn btn-primary" onClick={() => navigate("/view-requests", { state: { filter: "APPROVED" } })}>Active Requests</button>
           <FaAward style={{ ...styles.iconBase, color: "#2563eb", background: "#dbeafe" }} />
         </div>
         <div style={styles.statCard}>
-          <p style={styles.subtitle}>Total beneficiaries helped</p>
-          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>456</h2>
+          <p style={styles.subtitle}>Pending Requests</p>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{reqCount.pending}</h2>
+          <button className="btn btn-warning" onClick={() => navigate("/view-requests", { state: { filter: "PENDING" } })}>New Requests</button>
+          <FaChartLine style={{ ...styles.iconBase, color: "#7c3aed", background: "#ede9fe" }} />
+        </div>
+        <div style={styles.statCard}>
+          <p style={styles.subtitle}>Impact</p>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{impactCount.impact}</h2>
           <FaUsers style={{ ...styles.iconBase, color: "#16a34a", background: "#dcfce7" }} />
         </div>
         <div style={styles.statCard}>
-          <p style={styles.subtitle}>Funds Received</p>
-          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>₹12.5L</h2>
+          <p style={styles.subtitle}>Total Funds</p>
+          <h2 style={{ fontSize: "28px", margin: "8px 0" }}>{formatCurrency(fundRecd.totalFunds)}</h2>
           <FaHeart style={{ ...styles.iconBase, color: "#dc2626", background: "#fee2e2" }} />
         </div>
         <div style={styles.statCard}>
@@ -131,41 +223,49 @@ const NgoDashboard = () => {
         </div>
       </div>
 
-      {/* Middle Section */}
       <div style={styles.middleGrid}>
         <div style={styles.card}>
-          <h3 style={{ marginBottom: "10px" }}>Active Campaigns</h3>
-          <div style={{ marginTop: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-              <span>Education for Rural Kids</span>
-              <span style={styles.subtitle}>₹3.5L raised of ₹5L</span>
-            </div>
-            <div style={styles.progressBar}>
-              <div style={{ width: "85%", height: "100%", background: "#2563eb" }}></div>
-            </div>
-          </div>
-          
-          <div style={{ marginTop: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-              <span>Clean Water Initiative</span>
-              <span style={styles.subtitle}>₹45k raised of ₹2L</span>
-            </div>
-            <div style={styles.progressBar}>
-              <div style={{ width: "50%", height: "100%", background: "#16a34a" }}></div>
-            </div>
-          </div>
+          <h3 style={{ marginBottom: "10px" }}>Ongoing Requests</h3>
+          {activeReqs.length > 0 ? (
+            activeReqs.map((req) => {
+              const raised = req.total_collected || 0;
+              const goal = req.amount_needed || 1;
+              const progressPercent = Math.min((raised / goal) * 100, 100);
 
-          <div style={{ marginTop: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-              <span>Emergency Food Relief</span>
-              <span style={styles.subtitle}>₹2L raised of ₹8L</span>
-            </div>
-            <div style={styles.progressBar}>
-              <div style={{ width: "50%", height: "100%", background: "#ce0b0b" }}></div>
-            </div>
-          </div>
+              return (
+                <div key={req.request_id} style={{ marginTop: "20px", borderBottom: "1px solid #eee", paddingBottom: "15px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
+                    <span style={{ fontWeight: "600" }}>{req.description}</span>
+                    <span style={{ color: "#2563eb", fontWeight: "bold" }}></span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginTop: "8px" }}>
+                    <span>₹{raised.toLocaleString()} raised of ₹{goal.toLocaleString()}</span>
+                    <span style={{ fontWeight: "bold" }}>{progressPercent.toFixed(0)}%</span>
+                  </div>
+
+                  <div style={styles.progressBar}>
+                    <div style={{
+                      width: `${progressPercent}%`,
+                      backgroundColor: progressPercent >= 100 ? "#16a34a" : "#2563eb",
+                      height: "100%",
+                      transition: "width 0.6s ease-in-out"
+                    }}></div>
+                  </div>
+
+                  <button 
+                    className="btn btn-outline-success btn-sm" 
+                    style={{ marginTop: "12px", width: "100%", fontWeight: "600" }}
+                    onClick={() => openDonateModal(req)}
+                  >
+                    Direct Donate
+                  </button>
+                </div>
+              );
+            })
+          ) : (
+            <p style={styles.subtitle}>No active requests undertaken yet.</p>
+          )}
         </div>
-  
 
         <div style={styles.card}>
           <h3 style={{ marginBottom: "10px" }}>Impact Metrics</h3>
@@ -175,22 +275,52 @@ const NgoDashboard = () => {
           <div style={styles.metricRow}><span>Checkups</span><strong>89</strong></div>
         </div>
       </div>
-      
 
-      {/* Recent Donations */}
-      <div style={styles.card}>
-        <h3 style={{ marginBottom: "15px" }}>Recent Donations</h3>
-        <div style={styles.metricRow}>
-          <div>
-            <strong>Rajesh Kumar</strong>
-            <p style={styles.subtitle}>Educational support</p>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <span style={{ fontWeight: "bold" }}>₹5,000</span>
-            <p style={styles.subtitle}>12/15/2025</p>
+  
+      {showDonateModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Donate to: {selectedReq?.description}</h5>
+                <button type="button" className="btn-close" onClick={() => setShowDonateModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <p><strong>Goal:</strong> ₹{selectedReq?.amount_needed}</p>
+                <p><strong>Remaining:</strong> ₹{(selectedReq?.amount_needed - (selectedReq?.total_collected || 0)).toLocaleString()}</p>
+
+                <div className="form-group mt-3">
+                  <label>Enter Amount (₹)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={donationAmount}
+                    onChange={(e) => setDonationAmount(e.target.value)}
+                    placeholder="e.g. 5000"
+                  />
+                  <br />
+                  <div className="form-group mt-3">
+                  <input type="text" placeholder="Optional message" value = {donationDesc}
+                  onChange={(e)=> setDonationDesc(e.target.value)}></input>
+                  </div>
+
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowDonateModal(false)}>Cancel</button>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={handleDonationSubmit}
+                  disabled={!donationAmount || parseFloat(donationAmount) <= 0}
+                >
+                  Confirm Donation
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

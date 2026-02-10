@@ -78,7 +78,7 @@ const styles = {
 
 const NgoDashboard = () => {
   const navigate = useNavigate();
-  const userData = localStorage.getItem("user");
+  const userData = sessionStorage.getItem("user");
   const userDetail = JSON.parse(userData) || {};
 
   const [reqCount, setCounts] = useState({ active: 0, pending: 0 });
@@ -98,31 +98,64 @@ const NgoDashboard = () => {
     setShowDonateModal(true);
   };
  // sending donation detals
-  const handleDonationSubmit = () => {
+const handleDonationSubmit = () => {
+    
+    const amountToDonate = parseFloat(donationAmount);
+    
+    const currentCollected = selectedReq?.amount_collected || 0;
+    const goal = selectedReq?.amount_needed || 0;
+    const remaining = goal - currentCollected;
+
+    if (!amountToDonate || amountToDonate <= 0) {
+      alert("Please enter a valid donation amount greater than ₹0.");
+      return;
+    }
+
+   
+    if (amountToDonate > remaining) {
+        alert(`Limit exceeded! You can only donate up to ₹${remaining}.`);
+        return; 
+    }
+    
     const donationData = {
-      user_id: uid,
-      item_id: selectedReq.item_id,
-      benef_request_id: selectedReq.request_id,
-      amount: parseFloat(donationAmount),
-      donation_date: new Date().toISOString().split('T')[0],
-      description:donationDesc
+        user_id: uid,                                  
+        item_id: selectedReq.item_id,
+        benef_request_id: selectedReq.request_id,      
+        amount: selectedReq.amount_needed,             
+        amount_donated: amountToDonate,                
+        donation_date: new Date().toISOString().split('T')[0], 
+        description: donationDesc
     };
 
     fetch("http://localhost:8080/ngo/donate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(donationData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(donationData)
     })
-      .then(res => {
+    .then(res => {
         if (res.ok) {
-          alert("Donation Successful!");
-          setShowDonateModal(false);
-          setDonationAmount(""); // Clear input
-          window.location.reload();
+            alert("Donation Successful!");
+
+            // UPDATE PROGRESS BAR LOCALLY
+            setActive(prevReqs => prevReqs.map(req => 
+                req.request_id === selectedReq.request_id 
+                ? { ...req, amount_collected: (req.amount_collected || 0) + amountToDonate }
+                : req
+            ));
+
+            // UPDATE TOTAL FUNDS STAT LOCALLY
+            setFunds(prev => ({
+                ...prev,
+                totalFunds: (prev.totalFunds || 0) + amountToDonate
+            }));
+
+            setShowDonateModal(false);
+            setDonationAmount(""); 
+            setDonationDesc("");
         }
-      })
-      .catch(err => console.error("Donation failed", err));
-  };
+    })
+    .catch(err => console.error("Donation failed", err));
+};
 
   useEffect(() => {
     if (!uid) return;
@@ -179,7 +212,7 @@ const NgoDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    sessionStorage.clear();
     navigate("/login");
   };
 
@@ -223,7 +256,7 @@ const NgoDashboard = () => {
           <h3 style={{ marginBottom: "10px" }}>Ongoing Requests</h3>
           {activeReqs.length > 0 ? (
             activeReqs.map((req) => {
-              const raised = req.total_collected || 0;
+              const raised = req.amount_collected || 0;
               const goal = req.amount_needed || 1;
               const progressPercent = Math.min((raised / goal) * 100, 100);
 
@@ -281,7 +314,7 @@ const NgoDashboard = () => {
               </div>
               <div className="modal-body">
                 <p><strong>Goal:</strong> ₹{selectedReq?.amount_needed}</p>
-                <p><strong>Remaining:</strong> ₹{(selectedReq?.amount_needed - (selectedReq?.total_collected || 0)).toLocaleString()}</p>
+                <p><strong>Remaining:</strong> ₹{(selectedReq?.amount_needed - (selectedReq?.amount_collected || 0)).toLocaleString()}</p>
 
                 <div className="form-group mt-3">
                   <label>Enter Amount (₹)</label>

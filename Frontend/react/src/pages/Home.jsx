@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaArrowRight, FaChevronDown } from "react-icons/fa"; 
+import { FaArrowRight, FaChevronDown } from "react-icons/fa";
 import videoBg from "../assets/background_video3.mp4";
 
 // --- IMPORT THE NEW COMPONENTS ---
@@ -12,9 +12,22 @@ import StoriesSection from "../pages/StoriesSection";
 
 const Home = () => {
   const greetings = [
-    "Welcome", "स्वागतम्", "नमस्कार", "नमस्ते", "ਜੀ ਆਇਆਂ ਨੂੰ", 
-    "నమస్కారం", "ꯇꯔꯥꯝꯅ ꯑꯣꯛꯆꯔꯤ", "வணக்கம்", "خیر مقدم", "ସ୍ୱାଗତ", 
-    "স্বাগতম", "ನಮಸ್ಕಾರ", "স্বাগতম", "خوش آمدید", "സ്വാഗതം", "સ્વાગત છે", 
+    "Welcome",
+    "स्वागतम्",
+    "नमस्कार",
+    "नमस्ते",
+    "ਜੀ ਆਇਆਂ ਨੂੰ",
+    "నమస్కారం",
+    "ꯇꯔꯥꯝꯅ ꯑꯣꯛꯆꯔꯤ",
+    "வணக்கம்",
+    "خیر مقدم",
+    "ସ୍ୱାଗତ",
+    "স্বাগতম",
+    "ನಮಸ್ಕಾರ",
+    "স্বাগতম",
+    "خوش آمدید",
+    "സ്വാഗതം",
+    "સ્વાગત છે",
   ];
 
   const [index, setIndex] = useState(0);
@@ -22,7 +35,7 @@ const Home = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % greetings.length);
-    }, 3000); 
+    }, 3000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -30,57 +43,85 @@ const Home = () => {
   // --- BUTTON STYLES ---
   const btnStyles = {
     primary: {
-      backgroundColor: '#10b981', 
-      color: 'white',
-      padding: '18px 40px', 
-      borderRadius: '60px', 
-      border: 'none',
-      fontSize: '1.1rem',   
-      fontWeight: '700',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center', 
-      gap: '10px',
-      boxShadow: '0 8px 20px rgba(16, 185, 129, 0.4)', 
-      transition: 'all 0.3s ease', 
-      width: '100%', 
+      backgroundColor: "#10b981",
+      color: "white",
+      padding: "18px 40px",
+      borderRadius: "60px",
+      border: "none",
+      fontSize: "1.1rem",
+      fontWeight: "700",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "10px",
+      boxShadow: "0 8px 20px rgba(16, 185, 129, 0.4)",
+      transition: "all 0.3s ease",
+      width: "100%",
     },
     glass: {
-      backgroundColor: 'rgba(255, 255, 255, 0.15)', 
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      border: '2px solid rgba(255, 255, 255, 0.5)', 
-      color: 'white',
-      padding: '18px 40px', 
-      borderRadius: '60px', 
-      fontSize: '1.1rem',   
-      fontWeight: '700',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      width: '100%', 
-    }
+      backgroundColor: "rgba(255, 255, 255, 0.15)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      border: "2px solid rgba(255, 255, 255, 0.5)",
+      color: "white",
+      padding: "18px 40px",
+      borderRadius: "60px",
+      fontSize: "1.1rem",
+      fontWeight: "700",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      width: "100%",
+    },
+  };
+
+  // --- NEW STYLES FOR PILL AND GRADIENT ---
+  const pillStyle = {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
+    border: "1px solid rgba(255, 255, 255, 0.2)",
+    padding: "8px 24px",
+    borderRadius: "50px",
+    color: "#6ee7b7", // Light green to pop against dark bg
+    fontWeight: "700",
+    fontSize: "0.9rem",
+    marginBottom: "20px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
+    // textTransform: "uppercase",
+    letterSpacing: "1px",
+  };
+
+  const gradientTextStyle = {
+    background: "linear-gradient(to right, #34d399, #10b981)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    textShadow: "none",
+    fontFamily: '"Google Sans", sans-serif',
   };
 
   const bottomTextStyle = {
-    position: 'absolute',
-    bottom: '20px',
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '0.85rem',
+    position: "absolute",
+    bottom: "20px",
+    color: "rgba(255, 255, 255, 0.8)",
+    fontSize: "0.85rem",
     zIndex: 2,
-    textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-    fontWeight: '500'
+    textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
+    fontWeight: "500",
   };
 
   return (
     <div
-      className="hide-scrollbar" 
+      className="hide-scrollbar"
       style={{
-        height: "100%", 
+        height: "100%",
         width: "100%",
-        overflowY: "auto", 
-        overflowX: "hidden", 
-        position: "relative"
+        overflowY: "auto",
+        overflowX: "hidden",
+        position: "relative",
       }}
     >
       {/* --- RESPONSIVE CSS & ANIMATION --- */}
@@ -115,7 +156,6 @@ const Home = () => {
           SECTION 1: HERO (Video Background)
          ========================================= */}
       <div style={{ position: "relative", height: "100%", width: "100%" }}>
-        
         {/*1. BACKGROUND VIDEO*/}
         <video
           autoPlay
@@ -155,15 +195,17 @@ const Home = () => {
             zIndex: 1,
             textAlign: "center",
             color: "#fff",
-            height: "100%", 
+            height: "100%",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center", // Centers vertically
-            // paddingTop: "20vh",  <-- REMOVED THIS
           }}
         >
-          {/* Responsive Title */}
+          {/* --- NEW GLASS PILL BADGE --- */}
+          <div style={pillStyle}>🫱🏻‍🫲🏼 The #1 NGO Portal</div>
+
+          {/* Responsive Title with Gradient */}
           <h1
             key={index}
             className="fade-text hero-title"
@@ -173,85 +215,112 @@ const Home = () => {
               minHeight: "60px",
             }}
           >
-            {greetings[index]} to NGO-Connect
+            {greetings[index]} to{" "}
+            <span style={gradientTextStyle}>NGO-Connect</span>
           </h1>
 
           {/* Responsive Description */}
           <p
             className="hero-desc"
             style={{
-              marginBottom: "40px", 
+              marginBottom: "40px",
               maxWidth: "800px",
               lineHeight: "1.6",
               textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
             }}
           >
-            Connecting Donors, NGOs, and Beneficiaries for a better tomorrow. We bridge the gap between resources and need. Join us in building sustainable futures for communities through education, healthcare, food, etc.
+            Connecting Donors, NGOs, and Beneficiaries for a better tomorrow. We
+            bridge the gap between resources and need. Join us in building
+            sustainable futures for communities through education, healthcare,
+            food, etc.
           </p>
 
           {/* --- RESPONSIVE BUTTONS SECTION --- */}
-          <div 
+          <div
             className="hero-btn-group"
-            style={{ display: "flex", gap: "25px", justifyContent: "center", marginTop: "10px" }}
+            style={{
+              display: "flex",
+              gap: "25px",
+              justifyContent: "center",
+              marginTop: "10px",
+            }}
           >
-            
-            <Link to="/login" className="hero-btn-wrapper" style={{ textDecoration: 'none' }}>
-              <button 
+            <Link
+              to="/login"
+              className="hero-btn-wrapper"
+              style={{ textDecoration: "none" }}
+            >
+              <button
                 style={btnStyles.primary}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'scale(1.05)';
-                  e.target.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.6)';
+                  e.target.style.transform = "scale(1.05)";
+                  e.target.style.boxShadow =
+                    "0 10px 25px rgba(16, 185, 129, 0.6)";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.transform = 'scale(1)';
-                  e.target.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.4)';
+                  e.target.style.transform = "scale(1)";
+                  e.target.style.boxShadow =
+                    "0 8px 20px rgba(16, 185, 129, 0.4)";
                 }}
               >
                 Login to Account <FaArrowRight />
               </button>
             </Link>
 
-            <Link to="/register" className="hero-btn-wrapper" style={{ textDecoration: 'none' }}>
-              <button 
+            <Link
+              to="/register"
+              className="hero-btn-wrapper"
+              style={{ textDecoration: "none" }}
+            >
+              <button
                 style={btnStyles.glass}
                 onMouseEnter={(e) => {
-                    e.target.style.transform = 'scale(1.05)';
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+                  e.target.style.transform = "scale(1.05)";
+                  e.target.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
                 }}
                 onMouseLeave={(e) => {
-                    e.target.style.transform = 'scale(1)';
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.transform = "scale(1)";
+                  e.target.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
                 }}
               >
                 Join as New Member
               </button>
             </Link>
-
           </div>
         </div>
 
         {/* 4. CORNER TEXTS (Hidden on Mobile) */}
-        <div className="d-none d-md-block" style={{ ...bottomTextStyle, left: '20px' }}>
+        <div
+          className="d-none d-md-block"
+          style={{ ...bottomTextStyle, left: "20px" }}
+        >
           &copy; Copyright Group-1 @ CDAC-ACTS Know-IT
         </div>
 
         {/* --- DOWNWARD BOUNCING ARROW --- */}
-        <div 
+        <div
           className="position-absolute bottom-0 start-50 translate-middle-x mb-4"
           style={{ zIndex: 2 }}
         >
-          <div 
+          <div
             className="bounce-arrow"
-            style={{ cursor: 'pointer', opacity: 0.8 }}
-            onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+            style={{ cursor: "pointer", opacity: 0.8 }}
+            onClick={() =>
+              window.scrollTo({ top: window.innerHeight, behavior: "smooth" })
+            }
           >
             <FaChevronDown size={32} color="white" />
           </div>
         </div>
         {/* ------------------------------- */}
 
-        <div className="d-none d-md-block" style={{ ...bottomTextStyle, right: '20px', textAlign: 'right' }}>
-          Made with <span style={{ color: '#ff4d4d', fontSize: '1.2em' }}>❤️</span> by Group-1 at Know-IT(Pune)
+        <div
+          className="d-none d-md-block"
+          style={{ ...bottomTextStyle, right: "20px", textAlign: "right" }}
+        >
+          Made with{" "}
+          <span style={{ color: "#ff4d4d", fontSize: "1.2em" }}>❤️</span> by
+          Group-1 at Know-IT(Pune)
         </div>
       </div>
 
@@ -263,7 +332,6 @@ const Home = () => {
       <OurProcessSection />
       <TestimonialsSection />
       <FooterSection />
-
     </div>
   );
 };

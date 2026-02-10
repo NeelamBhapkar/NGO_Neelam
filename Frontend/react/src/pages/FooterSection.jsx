@@ -7,7 +7,7 @@ const FooterSection = () => {
       backgroundColor: '#0a1929', 
       color: '#fff',
       padding: '60px 40px',
-      fontFamily: 'serif',
+      fontFamily: 'sans-serif',
     },
   container: {
   maxWidth: '1300px',

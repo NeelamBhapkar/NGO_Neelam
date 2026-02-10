@@ -10,7 +10,7 @@ export default function FetchRequest() {
     // for individual view details button
     const [selectedReq, setReq] = useState();
     //const UpdateReq = ({ benefId }) => 
-    const userData = localStorage.getItem("user");
+    const userData = sessionStorage.getItem("user");
     const userDetail = JSON.parse(userData);    
     
     const changeStatus = async (newStatus) => {

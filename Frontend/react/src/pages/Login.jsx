@@ -25,13 +25,10 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
-    if(!validateEmail(email)){
-      return;
-    }
+    setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/Auth/login", {
+      const response = await fetch("http://localhost:5096/api/Auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

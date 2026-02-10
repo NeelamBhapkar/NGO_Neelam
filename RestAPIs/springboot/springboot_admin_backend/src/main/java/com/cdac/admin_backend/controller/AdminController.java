@@ -7,8 +7,8 @@ import com.cdac.admin_backend.entity.User;
 import com.cdac.admin_backend.repository.UserRepository;
 
 @RestController
-@RequestMapping("/admin")
-//@CrossOrigin(origins = "http://localhost:5173") // Allow React Frontend
+@RequestMapping("/api/admin")
+@CrossOrigin(origins = "http://localhost:5173") // Allow React Frontend
 public class AdminController {
 
     @Autowired

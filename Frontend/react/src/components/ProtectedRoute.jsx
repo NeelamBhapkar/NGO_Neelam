@@ -3,8 +3,8 @@ import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   // 1. Get user data from storage
-  const token = localStorage.getItem("token");
-  const userString = localStorage.getItem("user");
+  const token = sessionStorage.getItem("token");
+  const userString = sessionStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
 
   // 2. CHECK: Is user logged in?

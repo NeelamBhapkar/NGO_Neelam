@@ -140,7 +140,7 @@ const Register = () => {
                 </div>
 
                 <div className="col-md-6">
-                  <input type="tel" className="form-control form-control-sm bg-light bg-opacity-50 text-dark border-0" placeholder="Phone Number" required />
+                  <input type="tel" className="form-control form-control-sm bg-light bg-opacity-50 text-dark border-0" placeholder="Phone Number " required />
                 </div>
 
                 <div className="col-md-6">

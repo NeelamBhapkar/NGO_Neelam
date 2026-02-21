@@ -1,30 +1,129 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaChartLine, FaDollarSign, FaFileInvoice, FaSignOutAlt } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const DonorDashboard = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  // Ensure we safely parse the user object
+  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  const userId = user.userId; // Assuming your login response saves 'userId'
 
-  // --- Mock Data ---
-  const stats = [
-    { title: "Total Donated", value: "₹8,000", icon: <FaHeart />, iconColor: "text-danger", bg: "bg-danger bg-opacity-10" },
-    { title: "Donations Made", value: "2", icon: <FaChartLine />, iconColor: "text-primary", bg: "bg-primary bg-opacity-10" },
-    { title: "Lives Impacted", value: "6", icon: <FaDollarSign />, iconColor: "text-success", bg: "bg-success bg-opacity-10" },
-    { title: "Receipts Generated", value: "2", icon: <FaFileInvoice />, iconColor: "text-primary", bg: "bg-info bg-opacity-10" },
-  ];
+  // --- State Management ---
+  const [ngoList, setNgoList] = useState([]);
+  const [history, setHistory] = useState([]);
+  
+  // Form States
+  const [selectedNgoId, setSelectedNgoId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
 
-  const history = [
-    { date: "1/15/2024", beneficiary: "Priya Sharma", description: "Educational support", amount: "₹5,000", status: "completed" },
-    { date: "2/10/2024", beneficiary: "Priya Sharma", description: "Medical assistance", amount: "₹3,000", status: "completed" },
-    { date: "3/05/2024", beneficiary: "Rohan Das", description: "Food & Nutrition", amount: "₹1,500", status: "pending" },
-  ];
+  // Stats State (Calculated dynamically)
+  const [stats, setStats] = useState({
+    totalDonated: 0,
+    count: 0,
+    impact: 0
+  });
+
+  // --- 1. Fetch Data on Load ---
+  useEffect(() => {
+    if (!userId) {
+      navigate('/login'); // Redirect if not logged in
+      return;
+    }
+
+    // A. Fetch List of Approved NGOs for Dropdown
+    fetch("http://localhost:8080/donor/ngos")
+      .then(res => res.json())
+      .then(data => setNgoList(data))
+      .catch(err => console.error("Error loading NGOs:", err));
+
+    // B. Fetch Donation History & Calculate Stats
+    fetchHistory();
+  }, [userId, navigate]);
+
+const fetchHistory = () => {
+    fetch(`http://localhost:8080/donor/history/${userId}`)
+      .then(res => res.ok ? res.json() : []) // If error, return empty array
+      .then(data => {
+        if (Array.isArray(data)) { // Check if it's actually an array
+            setHistory(data);
+            calculateStats(data);
+        }
+      })
+      .catch(err => console.error("Error loading history:", err));
+};
+
+  const calculateStats = (data) => {
+    const total = data.reduce((sum, item) => sum + (item.amount_donated || item.amount || 0), 0);
+    setStats({
+      totalDonated: total,
+      count: data.length,
+      impact: Math.floor(total / 1000) // Mock logic: 1 life impacted per ₹1000 donated
+    });
+  };
+
+  // --- 2. Handle Donation Submit ---
+  const handleDonate = () => {
+    if (!selectedNgoId || !amount) {
+      alert("Please select an NGO and enter an amount.");
+      return;
+    }
+    if (parseFloat(amount) <= 0) {
+      alert("Donation amount must be greater than ₹0.");
+      return;
+    }
+
+    const donationPayload = {
+      user_id: userId,
+      amount: parseFloat(amount),
+      description: description,
+      // We send the goal amount as the donation amount for direct fund transfers
+      amount_donated: parseFloat(amount) 
+    };
+
+    fetch(`http://localhost:8080/donor/donate/${selectedNgoId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(donationPayload)
+    })
+    .then(res => {
+      if (res.ok) {
+        alert("Donation Successful! Thank you for your support.");
+        // Reset Form
+        setAmount("");
+        setDescription("");
+        setSelectedNgoId("");
+        // Refresh History & Stats
+        fetchHistory();
+      } else {
+        alert("Donation failed. Please try again.");
+      }
+    })
+    .catch(err => console.error("Donation error:", err));
+  };
 
   const handleLogout = () => {
-    localStorage.clear();
+    sessionStorage.clear();
     navigate('/login');
   };
+
+  // --- Formatter for Currency ---
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(val);
+  };
+
+  // --- UI Configuration (Stats Cards) ---
+  const statCards = [
+    { title: "Total Donated", value: formatCurrency(stats.totalDonated), icon: <FaHeart />, iconColor: "text-danger", bg: "bg-danger bg-opacity-10" },
+    { title: "Donations Made", value: stats.count, icon: <FaChartLine />, iconColor: "text-primary", bg: "bg-primary bg-opacity-10" },
+    { title: "Lives Impacted", value: stats.impact, icon: <FaDollarSign />, iconColor: "text-success", bg: "bg-success bg-opacity-10" },
+    { title: "Receipts Generated", value: stats.count, icon: <FaFileInvoice />, iconColor: "text-primary", bg: "bg-info bg-opacity-10" },
+  ];
 
   return (
     <div className="container-fluid min-vh-100 bg-light py-5">
@@ -35,7 +134,7 @@ const DonorDashboard = () => {
           <div>
             <h1 className="h3 mb-1 fw-bold text-dark">Donor Dashboard</h1>
             <p className="text-muted mb-0">
-              Welcome back, <strong className="text-primary">{user.username || "Rajesh Kumar"}</strong>
+              Welcome back, <strong className="text-primary">{user.username || "Donor"}</strong>
             </p>
           </div>
           <button 
@@ -48,7 +147,7 @@ const DonorDashboard = () => {
 
         {/* STATS CARDS */}
         <div className="row g-4 mb-5">
-          {stats.map((stat, index) => (
+          {statCards.map((stat, index) => (
             <div key={index} className="col-md-3 col-sm-6">
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body d-flex justify-content-between align-items-center p-4">
@@ -73,23 +172,57 @@ const DonorDashboard = () => {
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
                 <h4 className="card-title fw-bold mb-1">Make a Donation</h4>
-                <p className="text-muted small">Support beneficiaries with your contribution</p>
+                <p className="text-muted small">Support approved NGOs directly</p>
               </div>
               <div className="card-body p-4">
                 <form>
+                  {/* DROPDOWN FOR NGO SELECTION */}
                   <div className="mb-3">
-                    <label className="form-label small fw-bold text-secondary">Beneficiary Name</label>
-                    <input type="text" className="form-control" placeholder="Enter beneficiary name" />
+                    <label className="form-label small fw-bold text-secondary">Select NGO</label>
+                    <select 
+                      className="form-control form-select" 
+                      value={selectedNgoId}
+                      onChange={(e) => setSelectedNgoId(e.target.value)}
+                    >
+                      <option value="">-- Choose an NGO to support --</option>
+                      {/* Safe check to prevent .map() on non-arrays */}
+                      {Array.isArray(ngoList) && ngoList.map((ngo) => (
+                        <option key={ngo.userId} value={ngo.userId}>
+                          {ngo.username}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
                   <div className="mb-3">
                     <label className="form-label small fw-bold text-secondary">Amount (₹)</label>
-                    <input type="number" className="form-control" placeholder="Enter amount" />
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      placeholder="Enter amount"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)
+                        
+                      } 
+                    />
                   </div>
+
                   <div className="mb-3">
                     <label className="form-label small fw-bold text-secondary">Description (Optional)</label>
-                    <input type="text" className="form-control" placeholder="Purpose of donation" />
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      placeholder="Purpose of donation"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)} 
+                    />
                   </div>
-                  <button type="button" className="btn btn-secondary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 mt-2">
+
+                  <button 
+                    type="button" 
+                    onClick={handleDonate}
+                    className="btn btn-secondary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 mt-2"
+                  >
                     <FaHeart /> Donate Now
                   </button>
                 </form>
@@ -97,7 +230,7 @@ const DonorDashboard = () => {
             </div>
           </div>
 
-          {/* Impact Summary */}
+          {/* Impact Summary (Static Visualization for now, updated dynamic values) */}
           <div className="col-lg-5">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
@@ -106,7 +239,7 @@ const DonorDashboard = () => {
               </div>
               <div className="card-body p-4">
                 <div className="bg-danger bg-opacity-10 p-4 rounded mb-4 text-center">
-                  <h2 className="text-danger fw-bold mb-0">₹8,000</h2>
+                  <h2 className="text-danger fw-bold mb-0">{formatCurrency(stats.totalDonated)}</h2>
                   <p className="text-danger small mb-0 fw-semibold">Total contribution to date</p>
                 </div>
                 
@@ -148,7 +281,7 @@ const DonorDashboard = () => {
                 <thead className="bg-light">
                   <tr>
                     <th className="py-3 px-4 text-secondary small text-uppercase">Date</th>
-                    <th className="py-3 px-4 text-secondary small text-uppercase">Beneficiary</th>
+                    <th className="py-3 px-4 text-secondary small text-uppercase">Type</th>
                     <th className="py-3 px-4 text-secondary small text-uppercase">Description</th>
                     <th className="py-3 px-4 text-secondary small text-uppercase">Amount</th>
                     <th className="py-3 px-4 text-secondary small text-uppercase">Status</th>
@@ -156,19 +289,17 @@ const DonorDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {history.map((row, i) => (
+                  {history.length > 0 ? history.map((row, i) => (
                     <tr key={i}>
-                      <td className="px-4 py-3 fw-semibold text-dark">{row.date}</td>
-                      <td className="px-4 py-3">{row.beneficiary}</td>
-                      <td className="px-4 py-3 text-muted small">{row.description}</td>
-                      <td className="px-4 py-3 fw-bold">{row.amount}</td>
+                      <td className="px-4 py-3 fw-semibold text-dark">
+                        {new Date(row.donation_date).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">Direct Fund</td>
+                      <td className="px-4 py-3 text-muted small">{row.description || "General Support"}</td>
+                      <td className="px-4 py-3 fw-bold">{formatCurrency(row.amount_donated || row.amount)}</td>
                       <td className="px-4 py-3">
-                        <span className={`badge rounded-pill fw-semibold px-3 py-2 ${
-                          row.status === 'completed' 
-                            ? 'bg-success bg-opacity-10 text-success' 
-                            : 'bg-warning bg-opacity-10 text-warning'
-                        }`}>
-                          {row.status}
+                        <span className="badge rounded-pill fw-semibold px-3 py-2 bg-success bg-opacity-10 text-success">
+                          Completed
                         </span>
                       </td>
                       <td className="px-4 py-3 text-end">
@@ -177,7 +308,13 @@ const DonorDashboard = () => {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan="6" className="text-center py-4 text-muted">
+                        No donations made yet. Start your journey today!
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

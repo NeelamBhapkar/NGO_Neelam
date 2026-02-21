@@ -9,14 +9,14 @@ const FooterSection = () => {
       padding: '60px 40px',
       fontFamily: 'sans-serif',
     },
-    container: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      maxWidth: '1200px',
-      margin: '0 auto',
-      gap: '40px',
-    },
+  container: {
+  maxWidth: '1300px',
+  margin: '0 auto',
+  display: 'grid',
+  gridTemplateColumns: '2fr 1fr 1.5fr 2fr',
+  gap: '60px',
+  alignItems: 'start',
+ },
     column: {
       flex: '1 1 200px',
       marginBottom: '20px',

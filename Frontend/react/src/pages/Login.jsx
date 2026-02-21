@@ -48,16 +48,18 @@ const Login = () => {
       }
 
       // 2. STORE JWT TOKEN & USER DATA
-      localStorage.setItem("token", data.token); 
-      localStorage.setItem("user", JSON.stringify(data));
+      sessionStorage.setItem("token", data.token); 
+      sessionStorage.setItem("user", JSON.stringify(data));
 
+      const navOptions = {replace: true};
       // 3. Redirect based on Role
+      console.log(data.role);
       switch (data.role) {
-        case "Admin": navigate("/admin-dashboard"); break;
-        case "NGO": navigate("/ngo-dashboard"); break;
-        case "Donor": navigate("/donor-dashboard"); break;
-        case "Beneficiary": navigate("/beneficiary-dashboard"); break;
-        default: navigate("/");
+        case "Admin": navigate("/admin-dashboard", navOptions); break;
+        case "NGO": navigate("/ngo-dashboard",navOptions); break;
+        case "Donor": navigate("/donor-dashboard",navOptions); break;
+        case "Beneficiary": navigate("/beneficiary-dashboard",navOptions); break;
+        default: navigate("/", navOptions);
       }
     } catch (err) {
       setError(err.message);
@@ -110,94 +112,47 @@ const Login = () => {
         </div>
 
         {/* --- RIGHT PANEL --- */}
-        <div className="col-md-6 d-flex align-items-center justify-content-center position-relative h-100 bg-white">
-          
-          <Link 
-            to="/" 
-            className="text-decoration-none position-absolute top-0 start-0 m-4 fw-bold d-flex align-items-center gap-2" 
-            style={{ color: '#10b981', zIndex: 10 }}
-          >
-            <FaArrowLeft /> Back
+        <div 
+          className="col-md-6 col-12 d-flex align-items-center justify-content-center position-relative"
+          style={{ height: '100%', overflowY: 'auto' }}
+        >
+          <Link to="/" className="btn btn-link text-decoration-none position-absolute top-0 start-0 m-3 fw-bold d-flex align-items-center gap-2" style={{ color: '#10b981', zIndex: 10 }}>
+            <FaArrowLeft /> Back to Home
           </Link>
 
-          <div className="w-100 px-4" style={{ maxWidth: "400px" }}>
-            <div className="mb-4">
-              <h2 className="fw-bold text-dark h3">Sign In</h2>
+          <div className="w-100 px-4 px-md-5 py-5" style={{ maxWidth: "500px" }}>
+            <div className="mb-4 text-center text-md-start pt-5 pt-md-0">
+              <h2 className="fw-bold text-dark mb-2">Sign In</h2>
               <p className="text-muted small">Enter your credentials to access your account</p>
             </div>
 
-            {error && (
-              <div className="alert alert-danger py-2 small d-flex align-items-center" role="alert">
-                {error}
-              </div>
-            )}
+            {error && <div className="alert alert-danger py-2 small d-flex align-items-center" role="alert">{error}</div>}
 
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label fw-bold small text-secondary mb-1">Email Address</label>
-                <input
-                  type="email"
-                  className="form-control bg-light border-0"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  style={{ fontSize: '0.95rem', padding: '10px' }}
-                />
+                <label className="form-label fw-bold small text-secondary">Email Address</label>
+                <input type="email" className="form-control bg-light border-0 py-2" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
-
               <div className="mb-3">
-                <label className="form-label fw-bold small text-secondary mb-1">Password</label>
-                <input
-                  type="password"
-                  className="form-control bg-light border-0"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  style={{ fontSize: '0.95rem', padding: '10px' }}
-                />
+                <label className="form-label fw-bold small text-secondary">Password</label>
+                <input type="password" className="form-control bg-light border-0 py-2" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required />
               </div>
 
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input shadow-none"
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    style={{ cursor: 'pointer', borderColor: '#10b981' }} 
-                  />
-                  <label className="form-check-label small text-muted" htmlFor="rememberMe" style={{ cursor: 'pointer' }}>
-                    Remember me
-                  </label>
+                  <input type="checkbox" className="form-check-input shadow-none" id="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} style={{ cursor: 'pointer', borderColor: '#10b981' }} />
+                  <label className="form-check-label small text-muted" htmlFor="rememberMe" style={{ cursor: 'pointer' }}>Remember me</label>
                 </div>
-                <Link to="/forgot-password" className="small text-decoration-none fw-bold" style={{ color: '#10b981' }}>
-                  Forgot password?
-                </Link>
+                <Link to="/forgot-password" className="small text-decoration-none fw-bold" style={{ color: '#10b981' }}>Forgot password?</Link>
               </div>
 
-              <button
-                type="submit"
-                className="btn w-100 text-white fw-bold shadow-sm"
-                disabled={isLoading}
-                style={{ 
-                  backgroundColor: '#10b981', 
-                  borderRadius: '25px',
-                  padding: '10px 0',
-                  fontSize: '1rem'
-                }}
-              >
+              <button type="submit" className="btn w-100 text-white fw-bold shadow-sm py-2 rounded-pill" disabled={isLoading} style={{ backgroundColor: '#10b981', borderColor: '#10b981' }}>
                 {isLoading ? "Loading..." : "Login"}
               </button>
             </form>
 
             <div className="text-center mt-4 text-muted small">
-              Don't have an account? 
-              <Link to="/register" className="ms-1 text-decoration-none fw-bold" style={{ color: '#10b981' }}>
-                Sign up
-              </Link>
+              Don't have an account? <Link to="/register" className="ms-1 text-decoration-none fw-bold" style={{ color: '#10b981' }}>Sign up</Link>
             </div>
           </div>
         </div>

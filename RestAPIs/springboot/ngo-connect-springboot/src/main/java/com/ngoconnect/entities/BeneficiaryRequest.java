@@ -1,93 +1,39 @@
 package com.ngoconnect.entities;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "beneficiary_request")
+@Getter
+@Setter
 public class BeneficiaryRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "request_id")
-    private Integer requestId;
+    private int requestId;
 
-    @Column(name = "beneficiary_id", nullable = false)
-    private Integer beneficiaryId;
+    @ManyToOne
+    @JoinColumn(name = "beneficiary_id")
+    private User beneficiary;
 
-    @Column(name = "item_id", nullable = false)
-    private Integer itemId;
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private Item item;
 
-    @Column(name = "amount_needed")
-    private Double amountNeeded;
-
-    @Column(name = "description")
+    private String proofDocument;
+    private BigDecimal amountNeeded;
     private String description;
-
-    @Column(name = "request_date")
-    private LocalDateTime requestDate;
-
-    @Column(name = "request_status")
     private String requestStatus;
 
-    // ---------- Constructors ----------
-    public BeneficiaryRequest() {}
+    @Column(name = "request_date")
+    private LocalDate requestDate;
+    
+    @Column(name = "expiry_date", nullable = false)
+    private LocalDate expiryDate;
 
-    // ---------- Getters & Setters ----------
-    public Integer getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(Integer requestId) {
-        this.requestId = requestId;
-    }
-
-    public Integer getBeneficiaryId() {
-        return beneficiaryId;
-    }
-
-    public void setBeneficiaryId(Integer beneficiaryId) {
-        this.beneficiaryId = beneficiaryId;
-    }
-
-    public Integer getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(Integer itemId) {
-        this.itemId = itemId;
-    }
-
-    public Double getAmountNeeded() {
-        return amountNeeded;
-    }
-
-    public void setAmountNeeded(Double amountNeeded) {
-        this.amountNeeded = amountNeeded;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getRequestDate() {
-        return requestDate;
-    }
-
-    public void setRequestDate(LocalDateTime requestDate) {
-        this.requestDate = requestDate;
-    }
-
-    public String getRequestStatus() {
-        return requestStatus;
-    }
-
-    public void setRequestStatus(String requestStatus) {
-        this.requestStatus = requestStatus;
-    }
 }

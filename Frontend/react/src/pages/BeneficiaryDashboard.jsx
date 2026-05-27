@@ -1,318 +1,353 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaClipboardList, FaCheckCircle, FaRupeeSign, FaSignOutAlt, FaBell } from 'react-icons/fa';
+import { FaClipboardList, FaCheckCircle, FaRupeeSign } from 'react-icons/fa';
 import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const BeneficiaryDashboard = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(sessionStorage.getItem("user") || '{}');
+  const user = JSON.parse(localStorage.getItem("user"));
   const beneficiaryId = user?.userId;
 
-  // --- State ---
   const [requests, setRequests] = useState([]);
-  const [items, setItems] = useState([]);
-  const [form, setForm] = useState({ itemId: '', amountNeeded: '', description: '',expiryDate: ''  });
+  const [form, setForm] = useState({
+    itemId: '',
+    amountNeeded: '',
+    description: ''
+  });
   const [proofFile, setProofFile] = useState(null);
-  
-  // Notification State (NEW)
-  const [notifications, setNotifications] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-
-  // Edit State
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ amountNeeded: '', description: '' });
-  const [editProofFile, setEditProofFile] = useState(null);
+  const [editForm, setEditForm] = useState({
+    amountNeeded: '',
+    description: ''
+  });
 
-  // Computed Values
-  const selectedItem = items.find(i => i.itemId === Number(form.itemId));
-  const isFinancial = selectedItem?.itemName === "Financial Assistance";
-  const hasActiveRequest = requests.some(
-    r => ["ACTIVE", "OPEN", "PENDING"].includes(r.requestStatus)
-  );
-
-
-  // --- API Calls ---
-  const fetchRequests = () => {
-    axios.get(`http://localhost:8084/api/beneficiary/requests/${beneficiaryId}`)
-         .then(res => setRequests(res.data))
-         .catch(err => console.error(err));
+  const fetchRequests = async () => {
+    const res = await axios.get(
+      `http://localhost:8081/api/beneficiary/requests/${beneficiaryId}`
+    );
+    setRequests(res.data);
   };
 
-  // Fetch Notifications (NEW)
-  // const fetchNotifications = () => {
-  //   axios.get(`http://localhost:8084/api/notifications/beneficiary`)
-  //        .then(res => setNotifications(res.data))
-  //        .catch(err => console.error("Error fetching notifications:", err));
-  // };
-
   useEffect(() => {
-    if (beneficiaryId) {
-      fetchRequests();
-     // fetchNotifications(); // Call notification fetch on load
-    }
-    axios.get("http://localhost:8084/api/items").then(res => setItems(res.data));
+    if (beneficiaryId) fetchRequests();
   }, [beneficiaryId]);
 
-  // --- Handlers ---
+  // ✅ Single active request rule
+  const hasActiveRequest = requests.some(
+    r => r.requestStatus === "OPEN" || r.requestStatus === "PENDING"
+  );
+
+  // ✅ CREATE REQUEST WITH PROOF
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!proofFile) {
       alert("Please upload proof document");
       return;
     }
 
-    if (isFinancial) {
-      const amountNumber = Number(form.amountNeeded);
-      if (!amountNumber || amountNumber <= 0) {
-        alert("Amount must be greater than 0 for financial assistance");
-        return;
-      }
-    }
-
     const formData = new FormData();
     formData.append("beneficiaryId", beneficiaryId);
-    formData.append("itemId", form.itemId);
+    formData.append("itemId", Number(form.itemId));
+    formData.append("amountNeeded", form.amountNeeded);
     formData.append("description", form.description);
-    formData.append("expiryDate", form.expiryDate);
-
-    formData.append("proof", proofFile);
-    if (isFinancial) formData.append("amountNeeded", Number(form.amountNeeded).toString());
-
+    formData.append("proofDocument", proofFile);
 
     try {
-      await axios.post("http://localhost:8084/api/beneficiary/request", formData);
-      alert("Request submitted");
-      setForm({ itemId: '', amountNeeded: '', description: '', expiryDate: '' }); setProofFile(null);
+      await axios.post(
+        "http://localhost:8081/api/beneficiary/request",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      alert("Request submitted successfully");
+      setForm({ itemId: '', amountNeeded: '', description: '' });
+      setProofFile(null);
       fetchRequests();
-    } catch (err) { alert(err.response?.data || "Failed"); }
-  };
 
-  const handleUpdate = async (request) => {
-    const isFinancialItem = request.item?.itemName === "Financial Assistance";
-
-    if (isFinancialItem) {
-      const amountNumber = Number(editForm.amountNeeded);
-      if (!amountNumber || amountNumber <= 0) {
-        alert("Amount must be greater than 0 for financial assistance");
-        return;
-      }
-    }
-
-    const formData = new FormData();
-    formData.append("description", editForm.description);
-    formData.append("amountNeeded", editForm.amountNeeded);
-    if (editProofFile) formData.append("proof", editProofFile);
-
-    try {
-      await axios.put(`http://localhost:8084/api/beneficiary/request/${request.requestId}`, formData);
-      setEditingId(null); setEditProofFile(null);
-      fetchRequests();
-    } catch (error) { console.error(error); }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Delete request?")) {
-      await axios.delete(`http://localhost:8084/api/beneficiary/request/${id}`);
-      fetchRequests();
+    } catch (err) {
+      alert(err.response?.data || "Failed to submit request");
     }
   };
 
-  const handleEditSetup = (r) => {
+  // ✅ EDIT
+  const handleEdit = (r) => {
     setEditingId(r.requestId);
-    setEditForm({ amountNeeded: r.amountNeeded || "", description: r.description || "" });
-    setEditProofFile(null);
+    setEditForm({
+      amountNeeded: r.amountNeeded,
+      description: r.description
+    });
   };
 
-  // Stats Array
+  // ✅ UPDATE
+  const handleUpdate = async (id) => {
+    await axios.put(
+      `http://localhost:8081/api/beneficiary/request/${id}`,
+      editForm
+    );
+    setEditingId(null);
+    fetchRequests();
+  };
+
+  // ✅ DELETE
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this request?")) return;
+    await axios.delete(
+      `http://localhost:8081/api/beneficiary/request/${id}`
+    );
+    fetchRequests();
+  };
+
+  // ✅ STATS
   const stats = [
-    { title: "Total Requests", val: requests.length, icon: <FaClipboardList />, col: "primary" },
-    { title: "Approved", val: requests.filter(r => r.requestStatus === 'APPROVED').length, icon: <FaCheckCircle />, col: "success" },
-    { title: "Funds", val: "₹0", icon: <FaRupeeSign />, col: "info" }
+    { title: "Total Requests", value: requests.length, icon: <FaClipboardList />, bg: "#dbeafe" },
+    { title: "Approved Requests", value: requests.filter(r => r.requestStatus === 'APPROVED').length, icon: <FaCheckCircle />, bg: "#d1fae5" },
+    { title: "Funds Received", value: "₹0", icon: <FaRupeeSign />, bg: "#ede9fe" },
   ];
 
   return (
-    <div className="container-fluid min-vh-100 bg-light py-4 position-relative">
-      <div className="container">
-        
-        {/* Header with Notifications */}
-        <div className="d-flex justify-content-between align-items-center mb-4 bg-white p-4 rounded shadow-sm">
-          <div>
-            <h2 className="h4 fw-bold mb-0">Beneficiary Dashboard</h2>
-            <small className="text-muted">Manage your aid requests</small>
-          </div>
-          
-          <div className="d-flex align-items-center gap-3">
-            {/* Notification Bell */}
-            <div className="position-relative" style={{cursor: 'pointer'}} onClick={() => setShowNotifications(!showNotifications)}>
-              <FaBell size={24} className="text-secondary" />
-              {notifications.length > 0 && (
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{fontSize: '0.6rem'}}>
-                  {notifications.length}
-                </span>
-              )}
-            </div>
+    <div style={styles.dashboardContainer}>
+      <div style={styles.headerRow}>
+        <h1 style={styles.pageTitle}>Beneficiary Dashboard</h1>
+        <button style={styles.logoutBtn}
+          onClick={() => { localStorage.clear(); navigate('/login'); }}>
+          Logout
+        </button>
+      </div>
 
-            <button onClick={() => { sessionStorage.clear(); navigate('/login'); }} className="btn btn-outline-danger d-flex align-items-center gap-2">
-              <FaSignOutAlt /> Logout
-            </button>
+      {/* STATS */}
+      <div style={styles.statsGrid}>
+        {stats.map((s, i) => (
+          <div key={i} style={styles.statCard}>
+            <div>
+              <span style={styles.statTitle}>{s.title}</span>
+              <h2 style={styles.statValue}>{s.value}</h2>
+            </div>
+            <div style={{ ...styles.iconBox, background: s.bg }}>{s.icon}</div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Notification Dropdown Panel */}
-        {showNotifications && (
-          <div className="card shadow-lg position-absolute end-0 me-5 border-0" style={{ width: '350px', zIndex: 1000, top: '90px', right: '80px' }}>
-            <div className="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
-              <span>Admin Broadcasts</span>
-              <button type="button" className="btn-close btn-close-white small" onClick={() => setShowNotifications(false)}></button>
-            </div>
-            <div className="card-body p-0" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-              {notifications.length === 0 ? (
-                <p className="text-center text-muted py-3 m-0">No new messages</p>
-              ) : (
-                <ul className="list-group list-group-flush">
-                  {notifications.map(n => (
-                    <li key={n.notificationId} className="list-group-item">
-                      <div className="d-flex justify-content-between align-items-start">
-                        <strong className="text-dark small mb-1">{n.subject}</strong>
-                        <small className="text-muted" style={{fontSize: '0.7rem'}}>
-                          {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : 'Just now'}
-                        </small>
-                      </div>
-                      <p className="mb-0 text-secondary small">{n.message}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+      {/* CREATE REQUEST */}
+      <div style={styles.card}>
+        <h3 style={styles.cardTitle}>Create Aid Request</h3>
+
+        {hasActiveRequest && (
+          <div style={styles.warningBox}>
+            ⚠ You already have an active request. Please wait until it is closed.
           </div>
         )}
 
-        {/* Stats */}
-        <div className="row g-3 mb-4">
-          {stats.map((s, i) => (
-            <div key={i} className="col-md-4"><div className="card border-0 shadow-sm p-3 d-flex flex-row justify-content-between align-items-center">
-              <div><small className="text-muted fw-bold text-uppercase">{s.title}</small><h3 className="mb-0 fw-bold">{s.val}</h3></div>
-              <div className={`p-3 rounded-circle bg-${s.col} bg-opacity-10 text-${s.col}`}>{s.icon}</div>
-            </div></div>
-          ))}
-        </div>
+        <form onSubmit={handleSubmit}>
+          <input style={styles.input} placeholder="Item ID"
+            value={form.itemId}
+            onChange={e => setForm({ ...form, itemId: e.target.value })}
+            required
+          />
 
-        <div className="row g-4">
-          {/* Create Request Form */}
-          <div className="col-lg-4">
-            <div className="card border-0 shadow-sm h-100"><div className="card-header bg-white fw-bold py-3">Create Aid Request</div>
-              <div className="card-body">
-                {hasActiveRequest && <div className="alert alert-warning py-2 small fw-bold">⚠ Active request exists. Please wait.</div>}
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
-                    <select className="form-select" value={form.itemId} onChange={e => setForm({ ...form, itemId: e.target.value })} required>
-                      <option value="">Select Item</option>
-                      {items.map(i => <option key={i.itemId} value={i.itemId}>{i.itemName}</option>)}
-                    </select>
-                  </div>
-                  {isFinancial && (
-                    <div className="mb-3">
-                      <input
-                        type="number"
-                        className="form-control"
-                        placeholder="Amount Needed (₹)"
-                        min="1"
-                        value={form.amountNeeded}
-                        onChange={e => setForm({ ...form, amountNeeded: e.target.value })}
-                        required
-                      />
-                    </div>
-                  )}
-                  <div className="mb-3"><textarea className="form-control" rows="3" placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} required></textarea></div>
-                                  {/* EXPIRY DATE */}
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">
-                      Help required till (Expiry Date)
-                    </label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      min={new Date().toISOString().split("T")[0]}
-                      value={form.expiryDate}
-                      onChange={e =>
-                        setForm({ ...form, expiryDate: e.target.value })
-                      }
-                      required
-                    />
-                    
-                  </div>
-                  <label className="form-label fw-semibold">
-                      Provide Supporting Document
-                    </label>
-                  
-                  <div className="mb-3"><input type="file" className="form-control" accept=".pdf,.jpg,.png" onChange={e => setProofFile(e.target.files[0])} required /></div>
-                  <button className={`btn w-100 fw-bold ${hasActiveRequest ? 'btn-secondary' : 'btn-success'}`} disabled={hasActiveRequest}>Submit Request</button>
-                </form>
-              </div>
-            </div>
-          </div>
+          <input style={styles.input} type="number" placeholder="Amount Needed"
+            value={form.amountNeeded}
+            onChange={e => setForm({ ...form, amountNeeded: e.target.value })}
+            required
+          />
 
-          {/* Requests Table */}
-          <div className="col-lg-8">
-            <div className="card border-0 shadow-sm h-100"><div className="card-header bg-white fw-bold py-3">History</div>
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                  <thead className="bg-light"><tr><th>ID</th><th>Description</th><th>Amount</th><th>Proof</th><th>Status</th><th className="text-end">Actions</th></tr></thead>
-                  <tbody>
-                    {requests.map(r => (
-                      <RequestRow key={r.requestId} r={r} isEditing={editingId === r.requestId}
-                        editForm={editForm} setEditForm={setEditForm} setEditProofFile={setEditProofFile}
-                        onEdit={() => handleEditSetup(r)} onUpdate={() => handleUpdate(r)} 
-                        onCancel={() => setEditingId(null)} onDelete={() => handleDelete(r.requestId)} 
-                      />
-                    ))}
-                    {requests.length === 0 && <tr><td colSpan="6" className="text-center py-4 text-muted">No requests found.</td></tr>}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+          <input style={styles.input} placeholder="Description"
+            value={form.description}
+            onChange={e => setForm({ ...form, description: e.target.value })}
+            required
+          />
+
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            style={styles.input}
+            onChange={e => setProofFile(e.target.files[0])}
+            required
+          />
+
+          <button
+            style={{
+              ...styles.submitBtn,
+              backgroundColor: hasActiveRequest ? '#9ca3af' : '#16a34a',
+              cursor: hasActiveRequest ? 'not-allowed' : 'pointer'
+            }}
+            disabled={hasActiveRequest}
+          >
+            {hasActiveRequest ? "Active Request Exists" : "Submit Request"}
+          </button>
+        </form>
+      </div>
+
+      {/* REQUEST TABLE */}
+      <div style={styles.historyCard}>
+        <h3 style={styles.cardTitle}>My Requests</h3>
+
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+  {requests.map(r => {
+    
+    // ✅ PASTE HERE (inside map, before return)
+    const canModify =
+      r.requestStatus !== 'APPROVED' &&
+      r.requestStatus !== 'FULFILLED' &&
+      r.requestStatus !== 'CLOSED';
+
+    return (
+      <tr key={r.requestId}>
+        <td>{r.requestId}</td>
+
+        <td>
+          {editingId === r.requestId ? (
+            <input
+              value={editForm.description}
+              onChange={e =>
+                setEditForm({ ...editForm, description: e.target.value })
+              }
+            />
+          ) : (
+            r.description
+          )}
+        </td>
+
+        <td>
+          {editingId === r.requestId ? (
+            <input
+              type="number"
+              value={editForm.amountNeeded}
+              onChange={e =>
+                setEditForm({ ...editForm, amountNeeded: e.target.value })
+              }
+            />
+          ) : (
+            `₹${r.amountNeeded}`
+          )}
+        </td>
+
+        <td>
+          <span
+            style={{
+              ...styles.statusBadge,
+              backgroundColor:
+                r.requestStatus === 'APPROVED'
+                  ? '#dcfce7'
+                  : r.requestStatus === 'PENDING'
+                  ? '#fef3c7'
+                  : '#fee2e2',
+              color:
+                r.requestStatus === 'APPROVED'
+                  ? '#166534'
+                  : r.requestStatus === 'PENDING'
+                  ? '#92400e'
+                  : '#991b1b'
+            }}
+          >
+            {r.requestStatus}
+          </span>
+        </td>
+
+        <td>
+          {editingId === r.requestId ? (
+            <>
+              <button
+                style={styles.saveBtn}
+                onClick={() => handleUpdate(r.requestId)}
+              >
+                Save
+              </button>
+              <button
+                style={styles.cancelBtn}
+                onClick={() => setEditingId(null)}
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                style={{
+                  ...styles.editBtn,
+                  opacity: canModify ? 1 : 0.5,
+                  cursor: canModify ? 'pointer' : 'not-allowed'
+                }}
+                disabled={!canModify}
+                onClick={() => handleEdit(r)}
+              >
+                Edit
+              </button>
+
+              <button
+                style={{
+                  ...styles.deleteBtn,
+                  opacity: canModify ? 1 : 0.5,
+                  cursor: canModify ? 'pointer' : 'not-allowed'
+                }}
+                disabled={!canModify}
+                onClick={() => handleDelete(r.requestId)}
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
+        </table>
       </div>
     </div>
   );
 };
 
-// --- Sub-Component for Table Row ---
-const RequestRow = ({ r, isEditing, editForm, setEditForm, setEditProofFile, onEdit, onUpdate, onCancel, onDelete }) => {
-  const isFinancial = r.item?.itemName === "Financial Assistance";
-  const canModify = !['APPROVED', 'FULFILLED', 'CLOSED'].includes(r.requestStatus);
-  const statusColors = { APPROVED: 'success', PENDING: 'warning', REJECTED: 'danger' };
+/* ================= STYLES ================= */
 
-  if (isEditing) {
-    return (
-      <tr className="bg-light">
-        <td>{r.requestId}</td>
-        <td><input className="form-control form-control-sm" value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} /></td>
-        <td>{isFinancial ? <input type="number" className="form-control form-control-sm" style={{width:80}} min="1" value={editForm.amountNeeded} onChange={e => setEditForm({ ...editForm, amountNeeded: e.target.value })} /> : "-"}</td>
-        <td><input type="file" className="form-control form-control-sm" onChange={e => setEditProofFile(e.target.files[0])} /></td>
-        <td><span className="badge bg-secondary">Editing</span></td>
-        <td className="text-end">
-          <button className="btn btn-sm btn-success me-1" onClick={onUpdate}>Save</button>
-          <button className="btn btn-sm btn-outline-secondary" onClick={onCancel}>Cancel</button>
-        </td>
-      </tr>
-    );
+const styles = {
+  dashboardContainer: { padding: '32px', background: '#f8fafc', minHeight: '100vh' },
+  headerRow: { display: 'flex', justifyContent: 'space-between', marginBottom: '24px' },
+  pageTitle: { fontSize: '2rem', fontWeight: '700', color: '#065f46' },
+  logoutBtn: { background: '#dc2626', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px' },
+
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '20px' },
+  statCard: { background: '#fff', padding: '20px', borderRadius: '14px', display: 'flex', justifyContent: 'space-between' },
+  statTitle: { fontSize: '0.85rem', color: '#6b7280' },
+  statValue: { fontSize: '1.6rem', fontWeight: '700' },
+  iconBox: { width: 42, height: 42, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+
+  card: { background: '#fff', padding: '22px', borderRadius: '16px', marginTop: '30px' },
+  cardTitle: { fontWeight: '700', color: '#065f46' },
+
+  input: { width: '100%', padding: '10px', marginBottom: '12px', borderRadius: '8px', border: '1px solid #d1d5db' },
+  submitBtn: { width: '100%', padding: '12px', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '700' },
+
+  historyCard: { background: '#fff', marginTop: '32px', padding: '22px', borderRadius: '16px' },
+  table: { width: '100%', borderCollapse: 'collapse' },
+
+  statusBadge: { padding: '6px 14px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700' },
+
+  editBtn: { background: '#facc15', padding: '6px 14px', borderRadius: '8px', marginRight: '8px' },
+  deleteBtn: { background: '#fee2e2', padding: '6px 14px', borderRadius: '8px' },
+  saveBtn: { background: '#22c55e', padding: '6px 14px', borderRadius: '8px', marginRight: '8px' },
+  cancelBtn: { background: '#e5e7eb', padding: '6px 14px', borderRadius: '8px' },
+
+  warningBox: {
+    background: '#fef3c7',
+    color: '#92400e',
+    padding: '12px',
+    borderRadius: '8px',
+    marginBottom: '12px',
+    fontWeight: '600'
   }
-  return (
-    <tr>
-      <td className="fw-bold text-muted">#{r.requestId}</td>
-      <td>{r.description}</td>
-      <td className="fw-bold">{isFinancial ? `₹${r.amountNeeded}` : "-"}</td>
-      <td>{r.proofDocument ? <button className="btn btn-sm btn-link p-0 text-decoration-none" onClick={() => window.open(`http://localhost:8084/api/beneficiary/proof/${r.proofDocument}`, "_blank")}>View</button> : "-"}</td>
-      <td><span className={`badge bg-${statusColors[r.requestStatus] || 'secondary'} bg-opacity-25 text-${statusColors[r.requestStatus] || 'secondary'}`}>{r.requestStatus}</span></td>
-      <td className="text-end">
-        <button className="btn btn-sm btn-outline-primary me-1" disabled={!canModify} onClick={onEdit}>Edit</button>
-        <button className="btn btn-sm btn-outline-danger" disabled={!canModify} onClick={onDelete}>Delete</button>
-      </td>
-    </tr>
-  );
 };
 
 export default BeneficiaryDashboard;
